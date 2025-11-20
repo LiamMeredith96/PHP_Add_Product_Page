@@ -94,6 +94,7 @@ project/
 ├─ scandiweb_project2.sql # Database schema (book, dvd, furniture)
 └─ css/
    └─ style.css           # Styling for layout and forms
+```
 
 ## Setup and Running Locally
 
