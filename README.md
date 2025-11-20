@@ -115,7 +115,7 @@ Copy `config.example.php` to `config.php`
 
 Edit config.php and set:
 
-$dbHost = "localhost";
-$dbUser = "your_db_user";
-$dbPass = "your_db_password";
-$dbName = "scandiweb_project2";
+- $dbHost = "localhost";
+- $dbUser = "your_db_user";
+- $dbPass = "your_db_password";
+- $dbName = "scandiweb_project2";
