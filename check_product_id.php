@@ -1,38 +1,47 @@
 <?php
-    $sku = $_POST["sku"];
+// Checks whether a given SKU already exists in any of the product tables.
+// Returns "exists" or "not_exists" for the AJAX call in add_product.php.
 
+$sku = $_POST["sku"] ?? null;
 
-  $dbHost = "localhost";
-  $dbUser = "id20433692_scandiweb_project2";
-  $dbPass = "io&Vb/CPz&h2j)zF";
-  $dbName = "id20433692_scnadiweb";
+if ($sku === null || $sku === '') {
+    echo "not_exists";
+    exit;
+}
 
+require_once __DIR__ . '/config.php';
 
 $conn = mysqli_connect($dbHost, $dbUser, $dbPass, $dbName);
 
-
 if (!$conn) {
-    die("Connection failed: " . mysqli_connect_error());
+    http_response_code(500);
+    die("Database connection failed: " . mysqli_connect_error());
 }
 
-    
-$sql = "SELECT sku FROM book
-UNION
-SELECT sku FROM dvd
-UNION
-SELECT sku FROM furniture";
-$result = $conn->query($sql);
+// Check if SKU exists in any table (dvd, furniture, book)
+$sql = "
+    SELECT sku FROM (
+        SELECT sku FROM book
+        UNION
+        SELECT sku FROM dvd
+        UNION
+        SELECT sku FROM furniture
+    ) AS all_skus
+    WHERE sku = ?
+    LIMIT 1
+";
 
-if ($result->num_rows > 0) {
-while($row = $result->fetch_assoc()) {
-if ($row['sku'] == $sku) {
+$stmt = $conn->prepare($sql);
+$stmt->bind_param("s", $sku);
+$stmt->execute();
+$stmt->store_result();
+
+if ($stmt->num_rows > 0) {
     echo "exists";
-    break;
-}
-}
 } else {
-echo "not_exists";
+    echo "not_exists";
 }
 
-    $conn->close();
+$stmt->close();
+$conn->close();
 ?>

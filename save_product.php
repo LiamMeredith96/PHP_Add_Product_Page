@@ -1,52 +1,65 @@
 <?php
+// Handles saving a new product to the database based on the selected type.
 
-$dbHost = "localhost";
-$dbUser = "id20433692_scandiweb_project2";
-$dbPass = "io&Vb/CPz&h2j)zF";
-$dbName = "id20433692_scnadiweb";
-
+require_once __DIR__ . '/config.php';
 
 $conn = mysqli_connect($dbHost, $dbUser, $dbPass, $dbName);
 
-
 if (!$conn) {
-    die("Connection failed: " . mysqli_connect_error());
+    http_response_code(500);
+    die("Database connection failed: " . mysqli_connect_error());
 }
 
+// Basic product data from the form
+$sku         = $_POST['sku'] ?? null;
+$name        = $_POST['name'] ?? null;
+$price       = $_POST['price'] ?? null;
+$productType = $_POST['productType'] ?? null;
 
-$sku = $_POST['sku'];
-$name = $_POST['name'];
-$price = $_POST['price'];
-$productType = $_POST['productType'];
-
+// Simple guard: if required base fields missing, stop.
+if (!$sku || !$name || !$price || !$productType) {
+    die("Missing required fields.");
+}
 
 switch ($productType) {
     case 'DVD':
-        $size = $_POST['size'];
-        $sql = "INSERT INTO dvd (sku, name, price, size) VALUES ('$sku', '$name', '$price', '$size')";
+        $size = $_POST['size'] ?? null;
+
+        $stmt = $conn->prepare("INSERT INTO dvd (sku, name, price, size) VALUES (?, ?, ?, ?)");
+        $stmt->bind_param("ssss", $sku, $name, $price, $size);
         break;
+
     case 'Furniture':
-        $height = $_POST['height'];
-        $width = $_POST['width'];
-        $length = $_POST['length'];
-        $sql = "INSERT INTO furniture (sku, name, price, height, width, length) VALUES ('$sku', '$name', '$price', '$height', '$width', '$length')";
+        $height = $_POST['height'] ?? null;
+        $width  = $_POST['width'] ?? null;
+        $length = $_POST['length'] ?? null;
+
+        $stmt = $conn->prepare("INSERT INTO furniture (sku, name, price, height, width, length) VALUES (?, ?, ?, ?, ?, ?)");
+        $stmt->bind_param("ssssss", $sku, $name, $price, $height, $width, $length);
         break;
+
     case 'Book':
-        $weight = $_POST['weight'];
-        $sql = "INSERT INTO book (sku, name, price, weight) VALUES ('$sku', '$name', '$price', '$weight')";
+        $weight = $_POST['weight'] ?? null;
+
+        $stmt = $conn->prepare("INSERT INTO book (sku, name, price, weight) VALUES (?, ?, ?, ?)");
+        $stmt->bind_param("ssss", $sku, $name, $price, $weight);
         break;
+
     default:
-     
-        break;
+        die("Invalid product type.");
 }
 
-
-if ($conn->query($sql) === TRUE) {
+// Execute insert and redirect or show error
+if (isset($stmt) && $stmt->execute()) {
+    $stmt->close();
     header("Location: index.php");
+    exit();
 } else {
-    echo "Error: " . $sql . "<br>" . $conn->error;
+    echo "Error saving product.";
+    if (isset($stmt)) {
+        $stmt->close();
+    }
 }
-
 
 $conn->close();
 ?>

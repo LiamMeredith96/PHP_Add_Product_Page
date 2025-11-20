@@ -1,105 +1,102 @@
 <?php
+// Main product listing page: shows all products (DVD, Furniture, Book)
+// and allows mass delete (MASS DELETE button).
 
-
-$dbHost = "localhost";
-$dbUser = "id20433692_scandiweb_project2";
-$dbPass = "io&Vb/CPz&h2j)zF";
-$dbName = "id20433692_scnadiweb";
-
+require_once __DIR__ . '/config.php';
 
 $conn = mysqli_connect($dbHost, $dbUser, $dbPass, $dbName);
 
-
 if (!$conn) {
-    die("Connection failed: " . mysqli_connect_error());
+    http_response_code(500);
+    die("Database connection failed: " . mysqli_connect_error());
 }
 ?>
 
 <html>
 <head>
     <title>Product List</title>
+    <link rel="stylesheet" type="text/css" href="css/style.css">
 </head>
-<link rel="stylesheet" type="text/css" href="css/style.css">
 <body>
     <div class="header">
-        <h1>Product List</h1>        
+        <h1>Product List</h1>
     </div>
 
     <hr>
 
-    <form method="post" action="delete_products.php">
+    <!-- Form for mass deleting selected products -->
+    <form method="post" action="delete_products.php" onsubmit="return checkSelected(event);">
         <div class="contentposition">
-           
             <?php
-    
-                $sql = "SELECT * FROM (
-                            SELECT 'dvd' AS type, sku, name, price, CONCAT(size, 'MB') AS size, date_added FROM dvd
-                            UNION ALL
-                            SELECT 'furniture' AS type, sku, name, price, CONCAT('Dimension: ', height, 'x', width, 'x', length) AS size, date_added FROM furniture
-                            UNION ALL
-                            SELECT 'book' AS type, sku, name, price, CONCAT(weight, 'KG') AS size, date_added FROM book
-                        ) AS all_products
-                        ORDER BY date_added DESC";
-                $result = mysqli_query($conn, $sql);
+            // Union all products into a single result set, with a normalised "size" column
+            // that contains either MB, dimensions, or weight.
+            $sql = "
+                SELECT * FROM (
+                    SELECT 'dvd' AS type, sku, name, price, CONCAT(size, 'MB') AS size, date_added
+                    FROM dvd
+                    UNION ALL
+                    SELECT 'furniture' AS type, sku, name, price,
+                           CONCAT('Dimension: ', height, 'x', width, 'x', length) AS size, date_added
+                    FROM furniture
+                    UNION ALL
+                    SELECT 'book' AS type, sku, name, price, CONCAT(weight, 'KG') AS size, date_added
+                    FROM book
+                ) AS all_products
+                ORDER BY date_added DESC
+            ";
 
-                while ($row = mysqli_fetch_assoc($result)) {
-        echo "<table  style='position: relative;' class='box'>";
-        echo "<tr>";
-        echo "<th><input type='checkbox' class='delete-checkbox' name='product[]' value='" . $row['sku'] . "'></th>";       
-        echo "</tr>";       
-        echo "<tr class='productview'>";
-        echo "<td>" . $row['sku'] . "</td>";
-        echo "<td>" . $row['name'] . "</td>";
-        echo "<td>" . $row['price'] . "$</td>";
-        
-        if (!empty($row['size'])) {
-            echo "<td>" . $row['size'] . "</td>";
-        } else {
-            echo "";
+            $result = mysqli_query($conn, $sql);
+
+            while ($row = mysqli_fetch_assoc($result)) {
+                echo "<table style='position: relative;' class='box'>";
+                echo "<tr>";
+                echo "<th><input type='checkbox' class='delete-checkbox' name='product[]' value='" . htmlspecialchars($row['sku'], ENT_QUOTES, 'UTF-8') . "'></th>";
+                echo "</tr>";
+
+                echo "<tr class='productview'>";
+                echo "<td>" . htmlspecialchars($row['sku'], ENT_QUOTES, 'UTF-8') . "</td>";
+                echo "<td>" . htmlspecialchars($row['name'], ENT_QUOTES, 'UTF-8') . "</td>";
+                echo "<td>" . htmlspecialchars($row['price'], ENT_QUOTES, 'UTF-8') . "$</td>";
+
+                // Display the normalised "size"/attribute column for each product.
+                if (!empty($row['size'])) {
+                    echo "<td>" . htmlspecialchars($row['size'], ENT_QUOTES, 'UTF-8') . "</td>";
+                }
+
+                echo "</tr>";
+                echo "</table>";
+            }
+
+            mysqli_close($conn);
+            ?>
+        </div>
+
+        <!-- Buttons for adding a new product and mass delete -->
+        <button type="button" onclick="window.location.href='add_product.php'">ADD</button>
+        <button type="submit" name="submit">MASS DELETE</button>
+    </form>
+
+    <script>
+        // Ensures at least one checkbox is selected before allowing mass delete.
+        function checkSelected(event) {
+            var checkboxes = document.getElementsByClassName('delete-checkbox');
+            var isChecked = false;
+
+            for (var i = 0; i < checkboxes.length; i++) {
+                if (checkboxes[i].checked) {
+                    isChecked = true;
+                    break;
+                }
+            }
+
+            if (!isChecked) {
+                alert("Please select at least one product to delete.");
+                event.preventDefault();
+                return false;
+            }
+
+            return true;
         }
-
-        if (!empty($row['height']) && !empty($row['width']) && !empty($row['length']))  {
-            echo "<td>Dimension: " . $row['height'] . "x" . $row['width'] . "x" . $row['length'] . "</td>";
-        } else {
-            echo "";
-        }
-       
-        if (!empty($row['weight'])) {
-            echo "<td>" . $row['weight'] . "</td>";
-        } else {
-            echo "";
-        }
-        echo "</tr>";
-        echo "</table>";
-      }
-
-          
-    ?>
-                </div>
-                <button type="button" onclick="window.location.href='add-product.php'">ADD</button>
-                <button type="submit" name="submit" onclick="checkSelected()">MASS DELETE</button>
-  
-</form>
-
-<?php
-
-mysqli_close($conn);
-?>
-<script>
-function checkSelected() {
-  var checkboxes = document.getElementsByClassName('delete-checkbox');
-  var isChecked = false;
-  for (var i = 0; i < checkboxes.length; i++) {
-    if (checkboxes[i].checked) {
-      isChecked = true;
-      break;
-    }
-  }
-  if (!isChecked) {
-
-    event.preventDefault();
-  }
-}
-</script>
+    </script>
 </body>
 </html>

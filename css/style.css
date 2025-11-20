@@ -1,4 +1,4 @@
-
+/* Global page styling */
 body {
   color: #333;
   font-family: arial;
@@ -9,40 +9,49 @@ body {
   background: #fff;
   overflow-x: hidden;
   min-width: 1024px;
-  }
-  .contentposition{
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    max-width: 78%;
-    margin: auto;
-  }
-  .header {
-    margin: 2%;
-  }
-  .delete-checkbox{
-    position: absolute;
-    left: 10px;
-    top: 8px;
-  }
-  .box{
-    margin: 2%;
-    display: flex;
-    justify-content: center;
-    width: 248px;
-    align-items: center;
+}
 
-    border-radius: 5px;
-    background-color: #f2f2f2;
-    padding: 35px;
-   
-  }
-  .productview {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-  }
-.formcontainer{
+/* Product list grid layout */
+.contentposition {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  max-width: 78%;
+  margin: auto;
+}
+
+/* Heading area */
+.header {
+  margin: 2%;
+}
+
+/* Checkbox in top-left of each product card */
+.delete-checkbox {
+  position: absolute;
+  left: 10px;
+  top: 8px;
+}
+
+/* Product "card" styling */
+.box {
+  margin: 2%;
+  display: flex;
+  justify-content: center;
+  width: 248px;
+  align-items: center;
+  border-radius: 5px;
+  background-color: #f2f2f2;
+  padding: 35px;
+}
+
+.productview {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* Form container for the add product page */
+.formcontainer {
   margin: 2% auto 0;
   width: 100%;
   border-radius: 5px;
@@ -51,7 +60,7 @@ body {
   max-width: 29%;
 }
 
-
+/* Form inputs and selects */
 input[type=text], select {
   width: 100%;
   padding: 12px 20px;
@@ -62,21 +71,8 @@ input[type=text], select {
   box-sizing: border-box;
 }
 
-button[type=submit] {
-  max-width: 100%;
-  background-color: #4CAF50;
-  color: white;
-  padding: 14px 20px;
-  margin: 8px 0;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  width: 200px;
-}
-
-button[type=submit]:hover {
-  background-color: #45a049;
-}
+/* Buttons */
+button[type=submit],
 button[type=button] {
   max-width: 100%;
   background-color: #4CAF50;
@@ -89,10 +85,11 @@ button[type=button] {
   width: 200px;
 }
 
+button[type=submit]:hover,
 button[type=button]:hover {
   background-color: #45a049;
 }
-.container{
+
+.container {
   text-align: left;
 }
-

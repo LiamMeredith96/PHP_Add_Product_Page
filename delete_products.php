@@ -1,45 +1,45 @@
 <?php
+// Handles mass deletion of products from the product list.
+// Deletes matching SKUs from dvd, furniture, and book tables.
 
-
-$dbHost = "localhost";
-$dbUser = "id20433692_scandiweb_project2";
-$dbPass = "io&Vb/CPz&h2j)zF";
-$dbName = "id20433692_scnadiweb";
+require_once __DIR__ . '/config.php';
 
 $conn = mysqli_connect($dbHost, $dbUser, $dbPass, $dbName);
 
-
 if (!$conn) {
-  die("Connection failed: " . mysqli_connect_error());
+    http_response_code(500);
+    die("Database connection failed: " . mysqli_connect_error());
 }
 
+if (isset($_POST['submit']) && !empty($_POST['product'])) {
+    $products = $_POST['product'];
 
-if (isset($_POST['submit'])) {
+    // Prepare delete statements once and reuse.
+    $stmtDvd = $conn->prepare("DELETE FROM dvd WHERE sku = ?");
+    $stmtFurniture = $conn->prepare("DELETE FROM furniture WHERE sku = ?");
+    $stmtBook = $conn->prepare("DELETE FROM book WHERE sku = ?");
 
-  $product = $_POST['product'];
+    foreach ($products as $sku) {
+        // DVDs
+        $stmtDvd->bind_param("s", $sku);
+        $stmtDvd->execute();
 
-  
-  foreach ($product as $sku) {
-    $sql = "DELETE FROM dvd WHERE sku = '" . $sku . "' ";
-    mysqli_query($conn, $sql);
-  }
+        // Furniture
+        $stmtFurniture->bind_param("s", $sku);
+        $stmtFurniture->execute();
 
-   foreach ($product as $sku) {
-    $sql = "DELETE FROM furniture WHERE sku = '" . $sku . "' ";
-    mysqli_query($conn, $sql);
-  }
+        // Books
+        $stmtBook->bind_param("s", $sku);
+        $stmtBook->execute();
+    }
 
- 
-  foreach ($product as $sku) {
-    $sql = "DELETE FROM book WHERE sku = '" . $sku . "' ";;
-    mysqli_query($conn, $sql);
-  }
+    $stmtDvd->close();
+    $stmtFurniture->close();
+    $stmtBook->close();
 
-
-  header("Location: index.php");
-  exit();
+    header("Location: index.php");
+    exit();
 }
-
 
 mysqli_close($conn);
 ?>
